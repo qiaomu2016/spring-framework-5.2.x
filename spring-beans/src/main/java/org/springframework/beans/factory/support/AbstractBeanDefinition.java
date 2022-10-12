@@ -59,6 +59,36 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccessor
 		implements BeanDefinition, Cloneable {
 
+	/* 说明：
+	 * 注入模型spring一共有四种,作为静态常量定义在AbstractBeanDefinition类当中
+	 * 1.手动注入 AbstractBeanDefinition.AUTOWIRE_NO
+	 * 2.通过名字自动注入 AbstractBeanDefinition.AUTOWIRE_BY_NAME
+	 * 3.通过类型自动注入 AbstractBeanDefinition.AUTOWIRE_BY_TYPE
+	 * 4.通过构造方法自动注入 AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR
+	 *
+	 * 注意点：
+	 * 注入模型和查找bean的方式不能混为一谈，注入模型做给bean的一个特征会影响bean的一些行为、查找bean的方式是一种找到某个bean的策略，说白了就是一段代码；
+	 * spring当中很多地方会以某种方式查找一个bean；比如在完成属性输入的时候会根据类型去查找这个需要注入的属性；但这并不是AUTOWIRE_BY_TYPE
+	 *
+	 * @Autowired不会改变bean的注入模型（默认情况下bean的注入模型还是AUTOWIRE_NO）；@Autowired算是一种半自动注入；因为他只需要程序员告诉spring需要注入的属性或者方法，
+	 * 而不需要程序员告诉spring需要注入的属性或者方法他的值到底是哪个bean；@Autowired会根据自己的规则去查找这个bean，所以只能算作半自动注入
+	 *
+	 * @Autowired和@Resource能完成一样的功能；只不过前者是首先根据类型查找bean；如果没有找到报错（默认情况下@Autowired是一定需要注入一个bean的）；
+	 * 如果查找到一个则用找到的这一个完成注入；如果查找到多个；先把这个多个放到map当中；继而根据属性的名字去map当中去确定唯一的一个bean；能确定则使用确定的这个；如果map当中通过名字还是无法确定则报错；
+	 *
+	 * @Resource在没有配置name的情况下首先根据名字查找；如果名字能查找到则返回这个查找到的（spring容器的原则是name唯一；所以不存在通过名字能查找到多个的情况）；
+	 * 如果通过名字查找不到（需要注意的是这里的前提是没有配置name的情况，spring觉得名字无所谓）；因为对名字无要求，所以会再根据类型查找；
+	 * 那么走的就是@Autowired这一套；如果配置了名字，spring觉得对名字有严格要求，所以只能根据你配置的名字查找；如果查找不到则报错，找到了则用；不会走@Autowired这一套了
+	 *
+	 * 属性注入是spring bean的生命周期非常重要的一步；处理@Autowired和@Resource就是完成属性注入；完成属性注入的原理是BeanPostProcessor原理；
+	 * 也就是说spring会去执行不同的BeanPostProcessor来完成对@Resource和@Autowired的解析，从而达到属性注入的目的
+	 *
+	 * spring是首先通过CommonAnnotationBeanPostProcessor这个类的postProcessorProperties方法来完成对@Resource注解的解析和处理；
+	 * 然后再通过AutowiredAnnotationPostProcessor的postProcessorProperties方法完成对@Autowired注解的处理和解析
+	 *
+	 * spring实现依赖注入的方式有两种分别是基于构造方法和基于setter，至于提供一个属性然后通过 @Autowired完成注入的这种方式（我们姑且称为属性注入）算不算，目前没有权威说法，只是我认为不算
+	 */
+
 	/**
 	 * Constant for the default scope name: {@code ""}, equivalent to singleton
 	 * status unless overridden from a parent bean definition (if applicable).
