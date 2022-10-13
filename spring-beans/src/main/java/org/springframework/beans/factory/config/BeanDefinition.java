@@ -23,6 +23,11 @@ import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
 
 /**
+ * 那么什么是beanDefinition？一言概之——spring bean的建模对象；
+ * 那么什么是spring bean的建模对象呢？还是一言概之就是把一个bean实例化出来的模型对象？有人会问把一个bean实例化出来有Class就行了啊，Class也就是我们通常说的类对象，就是一个普通对象的建
+ * 模对象，那么为什么spring不能用Class来建立bean呢?很简单，因为Class无法完成bean的抽象，比如bean的作用域，bean的注入模型，bean是否是懒加载等等信息，Class是无法抽象出来的，故而需要
+ * 一个BeanDefinition类来抽象这些信息，以便于spring可以根据这些信息去完美的实例化一个bean；
+ *
  * A BeanDefinition describes a bean instance, which has property values,
  * constructor argument values, and further information supplied by
  * concrete implementations.
@@ -216,6 +221,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	String getFactoryMethodName();
 
 	/**
+	 * 如果ConstructorArgumentValues对象当中有值，spring会把他作为构造方法的参数填充
 	 * Return the constructor argument values for this bean.
 	 * <p>The returned instance can be modified during bean factory post-processing.
 	 * @return the ConstructorArgumentValues object (never {@code null})
@@ -231,6 +237,7 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	}
 
 	/**
+	 * 如果MutablePropertyValues对象当中有值，spring会把他作为setter方法的参数填充
 	 * Return the property values to be applied to a new instance of the bean.
 	 * <p>The returned instance can be modified during bean factory post-processing.
 	 * @return the MutablePropertyValues object (never {@code null})
