@@ -530,11 +530,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
-				/**
-				 * 所有不等于真实的所有
-				 * 所有：可靠？
-				 * 1、完成了扫描
-				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
@@ -630,13 +625,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see org.springframework.web.context.support.WebApplicationContextUtils#initServletPropertySources
 	 */
 	protected void initPropertySources() {
-		//当前没有必要的属性要求
 
-
-
-
-		//我写的 必须一个属性=ry
-		//getEnvironment().setRequiredProperties("xxx");
 	}
 
 	/**

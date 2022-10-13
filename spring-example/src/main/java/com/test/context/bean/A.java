@@ -14,38 +14,38 @@ import javax.inject.Named;
 @Slf4j(topic = "e")
 public class A implements InitializingBean {
 
-
 	@Autowired
 	C c;
 
 	@Autowired
 	ApplicationContext context;
 
-	public A(){
+	public A() {
 		log.debug("create a  Object");
 	}
-	//spring bean的生命周期初始化回调 注解形式
+
+	// spring bean的生命周期初始化回调 注解形式
 	@PostConstruct
-	public void  init(){
+	public void init() {
 		log.debug("a init PostConstruct");
 		context.publishEvent(new ABeanInitEvent(context));
 	}
 
-	//spring bean的生命周期初始化回调 接口形式
+	// spring bean的生命周期初始化回调 接口形式
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		log.debug("a init afterPropertiesSet");
 	}
 
-	//自动注入
+	// 自动注入
 	public void setC(C c) {
 		log.debug("autowired C");
 		this.c = c;
 	}
 
-	//获取
+	// 获取
 	public C getC() {
-		log.debug("c:[{}]",c);
+		log.debug("c:[{}]", c);
 		return c;
 	}
 }

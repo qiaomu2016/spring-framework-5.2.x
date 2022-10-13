@@ -95,6 +95,12 @@ import org.springframework.lang.Nullable;
  * <li>a custom destroy-method definition
  * </ol>
  *
+ * 怎么理解容器
+ * 容器是一个抽象的概念，是由一些组件组合在一起完成spring bean管理的工作；容器主要有两种分别是BeanFactory和ApplicationContext；
+ * beanFactory是一个简单的容器，能完成ban的实例化，bean的依赖注入；早期开发应用程序资源有限，使用beanFactory可以节省很大的资源；
+ * 说个最简单的比方beanFactory当中的bean都是懒加载的，但是随着互联网的发展现在的资源已经没有那么紧张了（比如内存），绝大部分情况下都是用ApplicationContext这个容器
+ * 他们主要区别在于ApplicationContext的功能比较丰富，支持国际化、支持事件发布、支持BeanPostProcessor的自动注册； 如：AnnotationConfigApplicationContext
+ *
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @author Chris Beams

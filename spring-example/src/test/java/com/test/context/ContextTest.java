@@ -14,7 +14,28 @@ import org.springframework.core.io.ClassPathResource;
 public class ContextTest {
 
 	@Test
-	public void defaultContext(){
+	public void testRegisterContext() {
+		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(ContextConfig.class);
+
+//		// 注：如果需要根据环境来加载不同的类，那么需要使用下面这种方式：先设置所属环境，再加载类
+//		// 因为上面 new AnnotationConfigApplicationContext(RootConfig.class) 这种方式，是已经扫描加载了所有的类了，环境变量将不再起作用
+//		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+//		// 设置环境
+//		applicationContext.getEnvironment().setActiveProfiles("dev");
+//
+//		// 可以注入一个配置类，配置类上会加入组件扫描：@ComponentScan
+//		applicationContext.register(ContextConfig.class);
+//		// 也可以注入单个类
+//		applicationContext.register(UserDao.class);
+//		applicationContext.scan("com.qiaomuer.spring");
+//		applicationContext.refresh();
+
+		A a = applicationContext.getBean(A.class);
+		a.getC();
+	}
+
+	@Test
+	public void defaultContext() {
 
 		//bean工厂
 //		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
@@ -48,27 +69,18 @@ public class ContextTest {
 	}
 
 	@Test
-	public void xmlBeanFactoryScanContext(){
-		//ClassPathXmlApplicationContext
-
+	public void xmlBeanFactoryScanContext() {
 		ClassPathResource classPathResource = new ClassPathResource("spring-context.xml");
 		XmlBeanFactory beanFactory = new XmlBeanFactory(classPathResource);
 		A a = beanFactory.getBean(A.class);
 		a.getC();
 
-
-//		AnnotationConfigApplicationContext
-//				context = new AnnotationConfigApplicationContext(ContextConfig.class);
-
-
 	}
 
 
 	@Test
-	public void ignoreContext(){
-		AnnotationConfigApplicationContext
-				context = new AnnotationConfigApplicationContext();
-
+	public void ignoreContext() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.scan("com.test.batis.bean");
 		context.refresh();
 		System.out.println(context.getBean(F.class).getK());
