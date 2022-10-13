@@ -10,10 +10,10 @@ public class LA {
 
 	@Autowired
 	LB lb;
+
 	public void printInfo(){
 		log.debug("lb-[{}]",lb);
 		log.debug("lb-[{}]",lb);
 	}
-
 
 }

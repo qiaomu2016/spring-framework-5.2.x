@@ -14,7 +14,7 @@ public class DB {
 	}
 
 	@PostConstruct
-	public void initMehtod(){
+	public void initMethod(){
 		log.debug("DB initMethod");
 	}
 }

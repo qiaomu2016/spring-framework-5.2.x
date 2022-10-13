@@ -10,35 +10,29 @@ import javax.annotation.Resource;
 
 @Component
 @Slf4j(topic = "e")
-public class M{
+public class M {
 
-public M(){
-	log.debug("default constructor m");
-}
+	public M() {
+		log.debug("default constructor m");
+	}
 
-public  M(N n){
-	log.debug("constructor N:{}",n);
-}
-public void setN(N n) {
-	log.debug("setter N:{}",n);
-	//this.n = n;
-}
+	public M(N n) {
+		log.debug("constructor N:{}", n);
+	}
 
+	public void setN(N n) {
+		log.debug("setter N:{}", n);
+		this.n = n;
+	}
 
-
-//	@Autowired
-//	@Resource
+	//	@Autowired
+	//	@Resource
 	private N n;
 
+	public void setExampleBean(ExampleBean exampleBean) {
+	}
 
-
-
-//	setX(X x){
-//		xdskfs;kfl;
-//	}
-
-
-//	public N getN() {
-//		return n;
-//	}
+	public N getN() {
+		return n;
+	}
 }

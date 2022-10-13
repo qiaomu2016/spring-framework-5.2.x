@@ -1,5 +1,6 @@
 package com.test.autoModel.util;
 
+import com.test.autoModel.defaults.ExampleBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -12,13 +13,12 @@ public class ModelBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		AbstractBeanDefinition beanDefinition = (AbstractBeanDefinition) beanFactory.getBeanDefinition("m");
 
-		log.debug("mode:{}",beanDefinition.getAutowireMode());  // 默认为：AUTOWIRE_NO
-		//m.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+		log.debug("mode:{}", beanDefinition.getAutowireMode());  // 默认为：AUTOWIRE_NO
 
-		//给我们A对象设置他的注入模型 =3
-		//beanDefinition.setAutowireMode(3);
+		// 给我们A对象设置他的注入模型 =3
 		beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-		//a.getPropertyValues().add("exampleBean",beanFactory.getBean("exampleBean"));
-		//beanFactory.ignoreDependencyType(ExampleBean.class);
+
+		beanDefinition.getPropertyValues().add("exampleBean",beanFactory.getBean("exampleBean"));
+		beanFactory.ignoreDependencyType(ExampleBean.class);
 	}
 }

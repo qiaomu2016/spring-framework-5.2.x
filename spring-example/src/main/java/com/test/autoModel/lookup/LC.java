@@ -1,7 +1,6 @@
 package com.test.autoModel.lookup;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Component;
 
@@ -9,15 +8,13 @@ import org.springframework.stereotype.Component;
 @Slf4j(topic = "e")
 public abstract class LC {
 
-
-
-	public  void printInfo(){
-		LB lb =createb();
+	public void printInfo(){
+		LB lb = createLB();
 		log.debug("lb-[{}]",lb);
-		lb =createb();
+		lb = createLB();
 		log.debug("lb-[{}]",lb);
 	}
 
 	@Lookup
-	public abstract LB createb();
+	public abstract LB createLB();
 }
