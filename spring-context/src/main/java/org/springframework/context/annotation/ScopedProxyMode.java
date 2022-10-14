@@ -19,6 +19,12 @@ package org.springframework.context.annotation;
 /**
  * Enumerates the various scoped-proxy options.
  *
+ * @Scope注解中的proxyMode方法值指示了IoC容器要不要为Bean创建代理，如何创建代理，是使用JDK的动态代理还是使用CGLIB？
+ * ScopedProxyMode的DEFAULT和NO作用是一样的
+ * 如果配置为INTERFACES或TARGET_CLASS，在ScopedProxyUtils的createScopedProxy方法中将会为目标Bean创建一个ScopedProxyFactoryBean的BeanDefinition，
+ * 并使用目标Bean的beanName来注册这个BeanDefinition，将目标Bean的beanName拼接上"ScopedTarget."前缀来注册目标Bean的BeanDefinition。
+ * 同时将目标BeanDefinition的autowireCandidate属性设置为false，以此来确保IoC容器在查找该类型的单个Bean时(getBean方法)不会返回原始Bean实例，而是返回经过代理后的Bean实例。
+ *
  * <p>For a more complete discussion of exactly what a scoped proxy is, see the
  * section of the Spring reference documentation entitled '<em>Scoped beans as
  * dependencies</em>'.

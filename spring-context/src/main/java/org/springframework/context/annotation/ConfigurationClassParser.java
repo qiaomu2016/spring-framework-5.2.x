@@ -171,8 +171,14 @@ class ConfigurationClassParser {
 		for (BeanDefinitionHolder holder : configCandidates) {//abx
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
-				if (bd instanceof AnnotatedBeanDefinition) {
-					//标准情况下进入这个if
+				if (bd instanceof AnnotatedBeanDefinition) { // 标准情况下进入这个if
+					// ContextConfig类的metadata信息如下：
+					// metadata = {StandardAnnotationMetadata@1221}
+					//	annotations = {Annotation[2]@1235}
+					//		0 = {$Proxy4@1238} "@org.springframework.context.annotation.Configuration(value=)"
+					//		1 = {$Proxy5@1239} "@org.springframework.context.annotation.ComponentScan(scopeResolver=class org.springframework.context.annotation.AnnotationScopeMetadataResolver, lazyInit=false, resourcePattern=**/*.class, excludeFilters=[], useDefaultFilters=true, scopedProxy=DEFAULT, basePackageClasses=[], nameGenerator=interface org.springframework.beans.factory.support.BeanNameGenerator, basePackages=[], value=[com.qiaomuer.spring], includeFilters=[])"
+					//	nestedAnnotationsAsMap = true
+					//	introspectedClass = {Class@1222} "class com.test.context.config.ContextConfig"
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
@@ -205,7 +211,7 @@ class ConfigurationClassParser {
 	}
 
 	protected final void parse(AnnotationMetadata metadata, String beanName) throws IOException {
-		//ConfigurationClass 描述配置的对象
+		// ConfigurationClass 为描述配置的对象
 		processConfigurationClass(new ConfigurationClass(metadata, beanName), DEFAULT_EXCLUSION_FILTER);
 	}
 
@@ -228,7 +234,7 @@ class ConfigurationClassParser {
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			return;
 		}
-		//configurationClasses 一个缓存
+		// 根据configClass从configurationClasses缓存中获取ConfigurationClass对象
 		ConfigurationClass existingClass = this.configurationClasses.get(configClass);
 		if (existingClass != null) {
 			if (configClass.isImported()) {
@@ -249,7 +255,7 @@ class ConfigurationClassParser {
 		// Recursively process the configuration class and its superclass hierarchy.
 		SourceClass sourceClass = asSourceClass(configClass, filter);
 		do {
-			//开始解析配置类
+			// 解析@Configuration配置类
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass, filter);
 		}
 		while (sourceClass != null);

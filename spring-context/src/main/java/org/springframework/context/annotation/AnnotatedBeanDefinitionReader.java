@@ -66,8 +66,7 @@ public class AnnotatedBeanDefinitionReader {
 	 * in the form of a {@code BeanDefinitionRegistry}
 	 * @see #AnnotatedBeanDefinitionReader(BeanDefinitionRegistry, Environment)
 	 * @see #setEnvironment(Environment)
-	 * beanDefinition的渲染器
-	 * 1、根据一个类能够渲染一个BeanDefinition
+	 * beanDefinition的渲染器，根据一个类能够渲染一个BeanDefinition
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
 		this(registry, getOrCreateEnvironment(registry));
@@ -87,7 +86,12 @@ public class AnnotatedBeanDefinitionReader {
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
-		//注册spring内置的beanDefinition
+		// 注册spring内置的beanDefinition
+		// ConfigurationClassPostProcessor -> BeanDefinitionRegistryPostProcessor -> BeanFactoryPostProcessor
+		// EventListenerMethodProcessor -> BeanFactoryPostProcessor
+		// AutowiredAnnotationBeanPostProcessor -> BeanPostProcessor
+		// CommonAnnotationBeanPostProcessor ->  BeanPostProcessor
+		// DefaultEventListenerFactory
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 
@@ -253,38 +257,56 @@ public class AnnotatedBeanDefinitionReader {
 			@Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
 			@Nullable BeanDefinitionCustomizer[] customizers) {
 
+		// 先把此实体类型转换为一个BeanDefinition
+		// 根据指定的bean创建一个AnnotatedGenericBeanDefinition，它可以理解为一个数据结构，包含了类的元数据信息，如scope，lazy等
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
+
+		// abd.getMetadata() 元数据包括：注解信息、是否内部类、类Class基本信息等等
+		// 此处由conditionEvaluator#shouldSkip去过滤此Class是否是配置类
+		// 判断是否需要跳过注解，spring中有一个@Condition注解，当不满足条件，这个bean就不会被解析
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}
 
 		abd.setInstanceSupplier(supplier);
+		// 解析bean的作用域，如果没有设置的话，默认为单例
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
-		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
+		// 获得beanName
+		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
+		// 解析通用注解，填充到AnnotatedGenericBeanDefinition，解析的注解为Lazy，Primary，DependsOn，Role，Description
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+
+		// 限定符处理，不是特指@Qualifier注解，也有可能是Primary,或者是Lazy，或者是其他（理论上是任何注解，这里没有判断注解的有效性），如果我们在外面，以类似这种
+		// AnnotationConfigApplicationContext annotationConfigApplicationContext = new AnnotationConfigApplicationContext(AppConfig.class);常规方式去初始化spring，
+		// qualifiers永远都是空的，包括上面的name和instanceSupplier都是同样的道理
+		// 但是spring提供了其他方式去注册bean，就可能会传入了
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
-				if (Primary.class == qualifier) {
+				if (Primary.class == qualifier) { // Primary注解优先
 					abd.setPrimary(true);
 				}
-				else if (Lazy.class == qualifier) {
+				else if (Lazy.class == qualifier) { // Lazy注解
 					abd.setLazyInit(true);
 				}
-				else {
+				else { // 其他，AnnotatedGenericBeanDefinition有个Map<String,AutowireCandidateQualifier>属性，直接push进去
 					abd.addQualifier(new AutowireCandidateQualifier(qualifier));
 				}
 			}
 		}
+		// 这段代码是spring5.0以后新加入的，Spring 5允许使用lambda 表达式来自定义注册一个 bean，基本上不会使用
 		if (customizers != null) {
 			for (BeanDefinitionCustomizer customizer : customizers) {
 				customizer.customize(abd);
 			}
 		}
-
+		// 把AnnotatedGenericBeanDefinition数据结构和beanName封装到一个对象中
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
+		// 看是需要代理，如果不需要代理，返回本身，如果需要代理，替换成代理BeanDefinitionHolder
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
+
+		// 调用DefaultListableBeanFactory中的registerBeanDefinition方法 注册
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}
 

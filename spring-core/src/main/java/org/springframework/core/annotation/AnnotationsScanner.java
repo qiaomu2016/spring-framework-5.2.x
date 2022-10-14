@@ -446,11 +446,12 @@ abstract class AnnotationsScanner {
 
 	static Annotation[] getDeclaredAnnotations(AnnotatedElement source, boolean defensive) {
 		boolean cached = false;
+		// 看缓存中是否已存在，如果存在，标记cached为true
 		Annotation[] annotations = declaredAnnotationCache.get(source);
 		if (annotations != null) {
 			cached = true;
 		}
-		else {
+		else { // 缓存不存在，则获取声明的注解，并且放入缓存中
 			annotations = source.getDeclaredAnnotations();
 			if (annotations.length != 0) {
 				boolean allIgnored = true;
@@ -489,6 +490,7 @@ abstract class AnnotationsScanner {
 			if (source instanceof Method && ((Method) source).isBridge()) {
 				return false;
 			}
+			// 获取source的注解并放入缓存中，判断source注解是否存在，如果存在则返回false，不存在返回true
 			return getDeclaredAnnotations(source, false).length == 0;
 		}
 		return false;
@@ -516,8 +518,10 @@ abstract class AnnotationsScanner {
 		}
 		if (source instanceof Class) {
 			Class<?> sourceClass = (Class<?>) source;
+			// source为配置类，没有实现接口也没有继承类，noSuperTypes 为true
 			boolean noSuperTypes = (sourceClass.getSuperclass() == Object.class &&
 					sourceClass.getInterfaces().length == 0);
+			// 传过来的searchStrategy为SearchStrategy.INHERITED_ANNOTATIONS ，因此会返回 noSuperTypes，即true
 			return (searchStrategy == SearchStrategy.TYPE_HIERARCHY_AND_ENCLOSING_CLASSES ? noSuperTypes &&
 					sourceClass.getEnclosingClass() == null : noSuperTypes);
 		}

@@ -161,11 +161,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		this.registry = registry;
-		//默认为t
 		if (useDefaultFilters) {
-			//注册过滤器 过滤器主要两个功能
-			//1、引入一个bean
-			//2、排除一个bean
+			// 注册过滤器，过滤器主要两个功能：1、引入一个bean 2、排除一个bean
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);
