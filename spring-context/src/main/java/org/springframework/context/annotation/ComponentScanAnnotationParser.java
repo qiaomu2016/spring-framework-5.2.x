@@ -74,32 +74,24 @@ class ComponentScanAnnotationParser {
 
 	//parse 解析配置类上面的componentScan注解
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, String declaringClass) {
-		//useDefaultFilters 比较重要
-		//scanner2
-		//useDefaultFilters  是否使用默认的过滤器
-		//Filters 两种过滤器
-		/**
-		 * 1、include   引入
-		 * 2、exclude   排除
-		 *
-		 * scanner.dosacn
-		 * 1、把所谓的类（文件）都获取到
-		 * 2、获取到的这些类，能不能变成bd（是不是符合规则）
-		 * 需要进行过滤include过滤到 就表示合格
-		 * 过滤逻辑  是否符合某个注解
-		 * 假设你扫描出来的能够被
-		 */
+
+		// 实例化元数据（注解）扫描器ClassPathBeanDefinitionScanner
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
-		//判断是否有配置名字策略器  generatorClass == BeanNameGenerator.class
+
+		// @org.springframework.context.annotation.ComponentScan
+		// (scopeResolver=org.springframework.context.annotation.AnnotationScopeMetadataResolver,
+		// lazyInit=false,resourcePattern=**/*.class,excludeFilters=[],useDefaultFilters=true,scopedProxy=DEFAULT,basePackageClasses=[],
+		// nameGenerator=org.springframework.beans.factory.support.BeanNameGenerator,
+		// basePackages=[com.qiaomuer.spring],value=[com.qiaomuer.spring],includeFilters=[])
+
+		// 判断是否有配置名字策略器  generatorClass == BeanNameGenerator.class，如果配置了则实例化配置的名字生成策略
 		Class<? extends BeanNameGenerator> generatorClass = componentScan.getClass("nameGenerator");
-		//默认为t
 		boolean useInheritedGenerator = (BeanNameGenerator.class == generatorClass);
-		//如果配置了则实例化配置的名字生成策略
-		//beanNameGenerator 可配置性？
 		scanner.setBeanNameGenerator(useInheritedGenerator ? this.beanNameGenerator :
 				BeanUtils.instantiateClass(generatorClass));
 
+		// 给扫描器设置代理模型
 		ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
 			scanner.setScopedProxyMode(scopedProxyMode);
@@ -108,28 +100,28 @@ class ComponentScanAnnotationParser {
 			Class<? extends ScopeMetadataResolver> resolverClass = componentScan.getClass("scopeResolver");
 			scanner.setScopeMetadataResolver(BeanUtils.instantiateClass(resolverClass));
 		}
-
+		// 给扫描器设置resourcePattern，默认值"**/*.class"
 		scanner.setResourcePattern(componentScan.getString("resourcePattern"));
-		//配置的includeFilters
+		// 给扫描器配置includeFilters
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("includeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addIncludeFilter(typeFilter);
 			}
 		}
-
+		// 给扫描器配置excludeFilters
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("excludeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addExcludeFilter(typeFilter);
 			}
 		}
 
-		//当前配置类是否懒加载
+		// 获取 当前配置类 是否配置了懒加载
 		boolean lazyInit = componentScan.getBoolean("lazyInit");
 		if (lazyInit) {
-			scanner.getBeanDefinitionDefaults().setLazyInit(true);
+			scanner.getBeanDefinitionDefaults().setLazyInit(true); // 给扫描器配置是否懒加载Bean
 		}
 
-		//获取用户配置的扫描路径
+		// 获取用户配置的扫描路径
 		Set<String> basePackages = new LinkedHashSet<>();
 		String[] basePackagesArray = componentScan.getStringArray("basePackages");
 		for (String pkg : basePackagesArray) {
@@ -140,19 +132,17 @@ class ComponentScanAnnotationParser {
 		for (Class<?> clazz : componentScan.getClassArray("basePackageClasses")) {
 			basePackages.add(ClassUtils.getPackageName(clazz));
 		}
-		if (basePackages.isEmpty()) {
+		if (basePackages.isEmpty()) { // 如果用户没有配置扫描路径，默认为当前声明类的包路径
 			basePackages.add(ClassUtils.getPackageName(declaringClass));
 		}
-		//declaringClass == ScanConfig
-		//自己是不需要扫描的直接排除
-		//不需要在这里再次添加
+		// scanner添加过滤器，用于排除掉不需要扫描的类
 		scanner.addExcludeFilter(new AbstractTypeHierarchyTraversingFilter(false, false) {
 			@Override
 			protected boolean matchClassName(String className) {
 				return declaringClass.equals(className);
 			}
 		});
-		//开始扫描
+		// 开始包扫描
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}
 

@@ -39,6 +39,13 @@ import java.lang.annotation.Target;
 @Documented
 public @interface PropertySources {
 
+	/* @PropertySources注解的源码比较简单，只有一个PropertySource[]数组类型的属性value，那我们如何使用@PropertySources注解指定配置文件呢？
+	 * 其实也很简单，就是使用如下所示的方式就可以了。
+	 * @PropertySources(value={
+	 *     @PropertySource(value={"classpath:xxx.properties"}),
+	 *     @PropertySource(value={"classpath:yyy.properties"}),
+	 * })
+	 */
 	PropertySource[] value();
 
 }

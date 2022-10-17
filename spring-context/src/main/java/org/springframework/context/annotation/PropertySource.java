@@ -162,6 +162,9 @@ import org.springframework.core.io.support.PropertySourceFactory;
  * @see org.springframework.core.env.PropertySource
  * @see org.springframework.core.env.ConfigurableEnvironment#getPropertySources()
  * @see org.springframework.core.env.MutablePropertySources
+ *
+ * @PropertySource注解是Spring 3.1开始引入的配置类注解。通过@PropertySource注解将properties配置文件中的值存储到Spring的 Environment中，
+ * Environment接口提供方法去读取配置文件中的值，参数是properties文件中定义的key值。后续就可以使用@Value 注解用${}占位符注入属性。
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -170,6 +173,7 @@ import org.springframework.core.io.support.PropertySourceFactory;
 public @interface PropertySource {
 
 	/**
+	 * 指定资源名称，如果为空，则自动生成名称
 	 * Indicate the name of this property source. If omitted, the {@link #factory()}
 	 * will generate a name based on the underlying resource (in the case of
 	 * {@link org.springframework.core.io.support.DefaultPropertySourceFactory}:
@@ -181,6 +185,8 @@ public @interface PropertySource {
 	String name() default "";
 
 	/**
+	 * 指定资源的路径，可以是 classpath:/xxx/xx，也可以是 file:/xxx/xxx/xx
+	 * eg：PropertySource(value={"classpath:xxx.properties", "classpath:yyy.properties"})
 	 * Indicate the resource location(s) of the properties file to be loaded.
 	 * <p>Both traditional and XML-based properties file formats are supported
 	 * &mdash; for example, {@code "classpath:/com/myco/app.properties"}
@@ -196,6 +202,7 @@ public @interface PropertySource {
 	String[] value();
 
 	/**
+	 * 是否忽略资源不存在的情况，如果不忽略，当资源不存在时就报错。默认不忽略。
 	 * Indicate if failure to find the a {@link #value() property resource} should be
 	 * ignored.
 	 * <p>{@code true} is appropriate if the properties file is completely optional.
@@ -205,12 +212,14 @@ public @interface PropertySource {
 	boolean ignoreResourceNotFound() default false;
 
 	/**
+	 * 指定资源文件的编码格式。如果不指定就使用文件默认的
 	 * A specific character encoding for the given resources, e.g. "UTF-8".
 	 * @since 4.3
 	 */
 	String encoding() default "";
 
 	/**
+	 * 指定资源工厂，如果不指定，就使用默认的资源工厂 DefaultPropertySourceFactory
 	 * Specify a custom {@link PropertySourceFactory}, if any.
 	 * <p>By default, a default factory for standard resource files will be used.
 	 * @since 4.3
