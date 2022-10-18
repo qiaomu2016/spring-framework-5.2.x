@@ -95,11 +95,22 @@ import org.springframework.lang.Nullable;
  * <li>a custom destroy-method definition
  * </ol>
  *
- * 怎么理解容器
+ * 怎么理解容器？
  * 容器是一个抽象的概念，是由一些组件组合在一起完成spring bean管理的工作；容器主要有两种分别是BeanFactory和ApplicationContext；
- * beanFactory是一个简单的容器，能完成ban的实例化，bean的依赖注入；早期开发应用程序资源有限，使用beanFactory可以节省很大的资源；
- * 说个最简单的比方beanFactory当中的bean都是懒加载的，但是随着互联网的发展现在的资源已经没有那么紧张了（比如内存），绝大部分情况下都是用ApplicationContext这个容器
- * 他们主要区别在于ApplicationContext的功能比较丰富，支持国际化、支持事件发布、支持BeanPostProcessor的自动注册； 如：AnnotationConfigApplicationContext
+ * beanFactory是一个简单的容器，能完成bean的实例化，bean的依赖注入；早期开发应用程序资源有限，使用beanFactory可以节省很大的资源；
+ * 说个最简单的比方：beanFactory当中的bean都是懒加载的，但是随着互联网的发展现在的资源已经没有那么紧张了（比如内存），绝大部分情况下都是用ApplicationContext这个容器
+ * 他们主要区别在于ApplicationContext的功能比较丰富，支持国际化、支持事件发布、支持BeanPostProcessor的自动注册；如：AnnotationConfigApplicationContext
+ *
+ * AnnotationConfigApplicationContext容器当中有一个非常重要的组件DefaultListableBeanFactory对象；
+ * 	这个对象当中有一个组件beanDefinitionMap主要来存储所有扫描出来的beanDefinition；这个容器里面的组件非常多，我们先介绍beanDefinitionMap和List；
+ * 	理解beanDefinitionMap先得阅读invokeBeanFactoryPostProcessor方法，invokeBeanFactoryPostProcessors方法的源码比较复杂，这里只做知识点的总结
+ * 1、关于beanDefinitionMap当中的内置的值
+ * 当spring容器执行到invokeBeanFactoryPostProcessors方法的时候，并没有完成扫描、但是beanDefinitionMap当中有6个值（你提供了配置类），其中前五个是spring内置的；是在执行
+ * AnnotationConfigApplicationContext的构造方法当中执行new AnnotatedBeanDefinitionReader(this);的时候就put到里面了；第六个是我们手动添加的配置类，spring调用了register方法put到里面的
+ * 2、invokeBeanFactoryPostProcessors方法是执行所有的可靠的BeanFactoryPostProcessor
+ * BeanFactoryPostProcessor有一个子类BeanDefinitionRegistryPostProcessor；父类当中的方法是postProcessBeanFactory，子类的方法是postProcessBeanDefinitionRegistry
+ * spring执行顺序总体上是先执行子类再执行父类；先执行API提供的，然后执行内置的实现了PriorityOrdered接口的，继而执行扫描出来的或者动态bd添加的实现了Orderd接口的，需要说明的是
+ * PriorityOrdered是继承了Orderd的；
  *
  * @author Rod Johnson
  * @author Juergen Hoeller

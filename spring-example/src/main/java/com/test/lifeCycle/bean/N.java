@@ -15,7 +15,7 @@ public class N implements InitializingBean {
 	@Autowired
 	M m;//半成品
 
-	//N 初始化回调
+	// N 初始化回调
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		m.printf();

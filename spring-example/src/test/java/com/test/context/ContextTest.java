@@ -7,6 +7,10 @@ import com.test.context.bfpp.C;
 import com.test.context.bfpp.X;
 import com.test.context.config.ContextConfig;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -24,7 +28,7 @@ public class ContextTest {
 //		applicationContext.getEnvironment().setActiveProfiles("dev");
 //
 //		// 可以注入一个配置类，配置类上会加入组件扫描：@ComponentScan
-//		applicationContext.register(ContextConfig.class);
+		applicationContext.register(ContextConfig.class);
 //		// 也可以注入单个类
 //		applicationContext.register(UserDao.class);
 //		applicationContext.scan("com.qiaomuer.spring");
@@ -36,36 +40,31 @@ public class ContextTest {
 
 	@Test
 	public void defaultContext() {
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory(); // bean工厂
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(com.test.context.bean.A.class);
+		builder.getBeanDefinition().setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+		beanFactory.registerBeanDefinition("a",builder.getBeanDefinition());
 
-		//bean工厂
-//		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-//
-//
-//		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(A.class);
-//		//builder.getBeanDefinition().setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-//
-//		beanFactory.registerBeanDefinition("a",builder.getBeanDefinition());
-//
-//		builder = BeanDefinitionBuilder.genericBeanDefinition(C.class);
-//////
-//		beanFactory.registerBeanDefinition("c",builder.getBeanDefinition());
-//		AutowiredAnnotationBeanPostProcessor auto =
-//				new AutowiredAnnotationBeanPostProcessor();
-//		auto.setBeanFactory(beanFactory);
-//		//beanFactory.addBeanPostProcessor(auto);
-//		beanFactory.getBean(C.class);
-//		A a = beanFactory.getBean(A.class);
-//		a.getC();
-//
-		AnnotationConfigApplicationContext
-				context = new AnnotationConfigApplicationContext();
+		builder = BeanDefinitionBuilder.genericBeanDefinition(com.test.context.bean.C.class);
+		beanFactory.registerBeanDefinition("c",builder.getBeanDefinition());
+
+		AutowiredAnnotationBeanPostProcessor auto =  new AutowiredAnnotationBeanPostProcessor();
+		auto.setBeanFactory(beanFactory);
+//		beanFactory.addBeanPostProcessor(auto);
+		beanFactory.getBean(com.test.context.bean.C.class);
+		com.test.context.bean.A a = beanFactory.getBean(com.test.context.bean.A.class);
+		a.getC();
+
+	}
+
+	@Test
+	public void defaultAnnotationConfigApplicationContext() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.addBeanFactoryPostProcessor(new B());
 		context.addBeanFactoryPostProcessor(new C());
 		context.register(ContextConfig.class);
 		context.refresh();
 		System.out.println(context.getBean(X.class));
-
-
 	}
 
 	@Test
@@ -74,7 +73,6 @@ public class ContextTest {
 		XmlBeanFactory beanFactory = new XmlBeanFactory(classPathResource);
 		A a = beanFactory.getBean(A.class);
 		a.getC();
-
 	}
 
 

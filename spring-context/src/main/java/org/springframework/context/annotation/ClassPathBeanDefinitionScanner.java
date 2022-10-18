@@ -272,31 +272,33 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
+		// 创建一个集合，存放扫描到BeanDefinition
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
+		// 遍历扫描所有给定的包
 		for (String basePackage : basePackages) {
-			//通过报名扫描符合规则的bd
+			// 调用父类ClassPathScanningCandidateComponentProvider的方法扫描给定类路径，获取符合条件的BeanDefinition
+			// 扫描basePackage路径下的java文件，并把它转成BeanDefinition类型（ScannedGenericBeanDefinition->AbstractBeanDefinition）
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
-
-
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
-				//生成bean的名字
+				// 生成bean的名字
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
-				if (candidate instanceof AbstractBeanDefinition) {
+				if (candidate instanceof AbstractBeanDefinition) { // 普通的BeanDefinition
+					// 给beanDefinition赋默认的初始值 （此处为执行：因为ScannedGenericBeanDefinition->AbstractBeanDefinition）
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
+				// 注解的BeanDefinition
 				if (candidate instanceof AnnotatedBeanDefinition) {
-					//处理公共的一些注解  比如Lazy等等
+					// 处理注解@Primary、@DependsOn等Bean注解
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
-				//判断是否注册了
+				// 判断是否注册了(检查BeanFactory中是否包含此BeanDefinition)
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
-					//put map
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}

@@ -137,14 +137,20 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		// @Import可以引入普通类、ImportBeanDefinitionRegistrar和ImportSelector的实例
+		// 下面对应三种@Import类的注册处理
+
+		// 注册被@import的普通类(@Component)
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+		// 注册配置类中定义的@Bean方法
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
-
+		// 解析XML并注册 （@ImportedResources）
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+		// 注册配置类中定义@import的ImportBeanDefinitionRegistrar类
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 

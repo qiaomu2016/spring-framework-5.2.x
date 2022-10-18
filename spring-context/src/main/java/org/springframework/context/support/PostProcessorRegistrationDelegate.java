@@ -54,16 +54,32 @@ final class PostProcessorRegistrationDelegate {
 
 
 	/**
-	 * 执行直接实现了 BeanFactoryPostProcessor 或者实现了 BeanDefinitionRegistryPostProcessor
+	 * 执行直接实现了 BeanFactoryPostProcessor 或者实现了 BeanDefinitionRegistryPostProcessor的类
+	 *
 	 * 问题：
-	 * 1、顺序能不能变？  最好不要变？意图？
+	 * 1、顺序能不能变？ 意图？
+	 * 	最好不要变；子类高于父类无可厚非，实现了排序的先执行也无可厚非；唯一有争议的是为什么API的先调用；
+	 * 	spring是想尽量充分利用了postProcessBeanDefinitionRegistry方法的意义；避免注入不完整的bean；
+	 * 	因为如果一个bean在扫描之后之后添加可能会有些功能不完善，api放到最前就不会有这个问题
 	 * 2、BeanDefinitionRegistryPostProcessor 和 ImportBeanDefinitionRegistrar的区别
+	 *  ImportBeanDefinitionRegistrar回调的时候可以获取注解信息
+	 *  ImportBeanDefinitionRegistrar的执行时机早于BeanDefinitionRegistryPostProcessor（除api提供）
+	 *  BeanDefinitionRegistryPostProcessor（除api提供）对一些bean的注册可能有些功能会失效比如@Bean
+	 *  ImportBeanDefinitionRegistrar没有上述问题，因为他是在ConfigurationClassPostProcessor内部执行的
+	 *  如果你一定要动态注册bd，尽量推荐试用ImportBeanDefinitionRegistrar
+	 *  除非你除了要动态添加bd还需要对beanFactory做一些全局设定，那么可以用BeanDefinitionRegistryPostProcessor，因为他是一个bean工厂后置处理器
 	 * 3、priorityOrderedPostProcessors为什么先是实例化 写法不一样
 	 * 4、processedBeans当中为什么不存api传过来的   api提供的子类或者父类 都不可能重复执行
-	 * 5、BeanDefinitionRegistryPostProcessor对于bd的修改，如何保证正确 提高当前bdrpp的执行时机
+	 * 5、BeanDefinitionRegistryPostProcessor对于bd的修改，如何保证正确 提高当前BeanDefinitionRegistryPostProcessor的执行时机
 	 * 6、BeanFactoryPostProcessor当中为什么不开放注册bd(其实是开放的) 有什么问题？-产生不合格的bean
-	 * @param beanFactory
-	 * @param beanFactoryPostProcessors
+	 *  我们不推荐用BeanFactoryPostProcessor来注册BeanDefinition
+	 *  BeanFactoryPostProcessor的优先级比BeanDefinitionRegistryPostProcessor还要低，上面我们已经说过，不推荐使用BeanDefinitionRegistryPostProcessor，所以更加不推荐
+	 *  BeanFactoryPostProcessor；因为你会可能会注册一个不完整功能的bean，除非你的bean你能确定没有那些特殊功能比如@Bean
+	 * 7、如何确保postProcessBeanDefinitionRegistry方法对子类类型的bd的修改最大化生效
+	 * 同级别子类修改一个子类的bd会失效（对普通类的修改不会失效），因为spring是找出同级别的bean直接实例化存到集合当中，然后一起执行，
+	 * 这样在执行第一个的时候如果修改了第二个的bd则无效（这也不是bug，估计作者不想搞的太复杂）；但是对普通类的修改就不会失效了，因为普通类实例化特别
+	 * 靠后，你修改一定会生效；如果你一定需要修改一个子类的bd，最好提高当前子类的级别
+	 *
 	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
@@ -243,9 +259,9 @@ final class PostProcessorRegistrationDelegate {
 		beanFactory.clearMetadataCache();
 	}
 
+	// 从Spring容器中找出的实现了BeanPostProcessor接口的Bean，并设置到BeanFactory中,之后bean被实例化的时候会调用这些BeanPostProcessor
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
-
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
 
 		// Register BeanPostProcessorChecker that logs an info message when

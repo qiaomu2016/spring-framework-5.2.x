@@ -29,6 +29,23 @@ import java.util.EventListener;
  * {@code ApplicationContext}, events will be filtered accordingly, with the
  * listener getting invoked for matching event objects only.
  *
+ * ApplicationListener是一个泛型接口，泛型的类型必须是 ApplicationEvent 及其子类，只要实现了这个接口，那么当容器有相应的事件触发时，就能触发 onApplicationEvent 方法
+ *
+ * 对于 Spring 容器的一些事件，可以监听并且触发相应的方法。通常的方法有 2 种，ApplicationListener 接口和@EventListener 注解。
+ * 要想顺利的创建监听器，并起作用，这个过程中需要这样几个角色：
+ * 1、事件（event）可以封装和传递监听器中要处理的参数，如对象或字符串，并作为监听器中监听的目标。
+ * 		定义事件：MyTestEvent extends ApplicationEvent
+ * 2、监听器（listener）具体根据事件发生的业务处理模块，这里可以接收处理事件中封装的对象或字符串。
+ * 		定义监听器：MyApplicationListener implements ApplicationListener<MyTestEvent>
+ * 3、事件发布者（publisher）事件发生的触发者。
+ * 		事件发布：在类里自动注入了ApplicationEventPublisher，通过调用#publishEvent(ApplicationEvent)方法发布事件，applicationEventPublisher.publishEvent(new MyTestEvent(this, msg))
+ *
+ * {@link EventListener} 注解
+ * 除了通过实现接口，还可以使用@EventListener 注解，实现对任意的方法都能监听事件。
+ * 在任意方法上标注@EventListener 注解，指定 classes，即需要处理的事件类型，一般就是 ApplicationEven 及其子类，可以设置多项。
+ * @code { @EventListener(classes = {MyApplicationListener.class}) } ，其实添加@EventListener注解的方法会被包装成了ApplicationListener对象
+ *
+ *
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @param <E> the specific {@code ApplicationEvent} subclass to listen to

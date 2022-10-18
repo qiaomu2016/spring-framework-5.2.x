@@ -1,6 +1,6 @@
 package com.test.lifeCycle;
 
-import com.test.lifeCycle.bean.*;
+import com.test.lifeCycle.bean.N;
 import com.test.lifeCycle.config.LifeCycleConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -10,10 +10,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class CycleTest {
 
 	@Test
-	public void defaultCycle(){
-		AnnotationConfigApplicationContext
-				context
-				 = new AnnotationConfigApplicationContext(LifeCycleConfig.class);
+	public void defaultCycle() {
+		AnnotationConfigApplicationContext context
+				= new AnnotationConfigApplicationContext(LifeCycleConfig.class);
 		try {
 			context.getBean(N.class).afterPropertiesSet();
 		} catch (Exception e) {

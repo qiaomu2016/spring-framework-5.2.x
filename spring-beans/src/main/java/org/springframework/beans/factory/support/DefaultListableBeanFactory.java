@@ -875,12 +875,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
-			//为什么不直接遍历map 而是从 list当中遍历一个beanNmae作为key
-			//从mergedBeanDefinitions map当当中去获取一个bd = beanDefinitionMap
+			// 为什么不直接遍历map，而是从list当中遍历一个beanName作为key,从mergedBeanDefinitions map当中去获取一个bd
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 
+			// 如果Bean不是抽象的，是单例的，不是懒加载的，则开始创建单例对象通过调用getBean(beanName)方法初始化
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
-				//判断是否fb
+				// 判断当前Bean是否实现了FactoryBean接口，如果实现了，判断是否要立即初始化
+				// 判断是否需要立即初始化，根据Bean是否实现了SmartFactoryBean并且重写的内部方法isEagerInit返回true
 				if (isFactoryBean(beanName)) {
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
@@ -896,12 +897,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 									((SmartFactoryBean<?>) factory).isEagerInit());
 						}
 						if (isEagerInit) {
-							getBean(beanName);
+							getBean(beanName); // 实例化Bean
 						}
 					}
 				}
 				else {
-					getBean(beanName);
+					getBean(beanName); // 实例化Bean
 				}
 			}
 		}

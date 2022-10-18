@@ -97,6 +97,7 @@ class ComponentScanAnnotationParser {
 			scanner.setScopedProxyMode(scopedProxyMode);
 		}
 		else {
+			// 设置解析@Scope注解的解析器，默认为：AnnotationScopeMetadataResolver
 			Class<? extends ScopeMetadataResolver> resolverClass = componentScan.getClass("scopeResolver");
 			scanner.setScopeMetadataResolver(BeanUtils.instantiateClass(resolverClass));
 		}

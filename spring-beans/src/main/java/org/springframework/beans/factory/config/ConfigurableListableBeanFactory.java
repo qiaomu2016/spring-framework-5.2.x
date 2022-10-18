@@ -43,7 +43,7 @@ public interface ConfigurableListableBeanFactory
 		extends ListableBeanFactory, AutowireCapableBeanFactory, ConfigurableBeanFactory {
 
 	/**
-	 * 所有自动注入的bean当中如果依赖的type 则忽略
+	 * 所有自动注入的bean当中如果依赖的type 则忽略（在自动注入的模型下忽略type类型bean的注入，对所有bean都生效）
 	 * Ignore the given dependency type for autowiring:
 	 * for example, String. Default is none.
 	 * @param type the dependency type to ignore
@@ -53,6 +53,9 @@ public interface ConfigurableListableBeanFactory
 	/**
 	 * 自动装配时忽略给定的依赖接口，通常被应用程序上下文用来注册以其他方式解析的依赖项，
 	 * 类似于BeanFactory通过BeanFactoryAware进行注入或者ApplicationContext通过ApplicationContextAware进行注入。
+	 *
+	 * 一般情况下ifc是个接口，里面有一个setter；如果某个bean实现了 ifc接口，那么必然会重写里面的setter，而重写的这个setter就不会被自动注入；
+	 * 主要作用也是忽略某个类型的bean的自动注入；但是ignoreDependencyInterface不能对所有bean生效，你得实现ifc接口才能对忽略的设置生效
 	 * Ignore the given dependency interface for autowiring.
 	 * <p>This will typically be used by application contexts to register
 	 * dependencies that are resolved in other ways, like BeanFactory through

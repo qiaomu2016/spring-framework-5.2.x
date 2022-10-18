@@ -415,28 +415,32 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	}
 
 	private Set<BeanDefinition> scanCandidateComponents(String basePackage) {
+		// 创建存储扫描到的类的集合
 		Set<BeanDefinition> candidates = new LinkedHashSet<>();
-
-		//公共包名获取包所在的路径得到一个文件对象  流
+		// 公共包名获取包所在的路径得到一个文件对象  流
 		try {
+			// basePackage=com.test.context.bean      this.resourcePattern=”**/*.class”，
+			// resolveBasePackage方法将包名中的”.”转换为文件系统的”/”  ->  com/test/context/bean
+			// packageSearchPath ->  classpath*:com/test/context/bean/**/*.class
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
+			// 循环获取到的资源文件
 			for (Resource resource : resources) {
 				if (traceEnabled) {
 					logger.trace("Scanning " + resource);
 				}
 				try {
-					//class ==metadataReader
+					// 为指定资源获取元数据读取器（SimpleMetadataReader），元信息读取器通过汇编(ASM)读取资源元信息
 					MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
-					//判断是否被排除，是否加了必要的注解
-					//E 没有被排除 E被第四个include 过滤到了
+					// 如果扫描到的类符合容器配置的过滤规则（判断是否被排除，是否加了必要的注解）
 					if (isCandidateComponent(metadataReader)) {
+						// 通过汇编(ASM)读取资源字节码中的Bean定义元信息，赋值给sbd的metadata属性
 						ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
-						sbd.setSource(resource);
-						//是否抽象，是否接口
+						sbd.setSource(resource); // 为元数据元素设置配置资源对象
+						// 检查Bean是否是一个可实例化的对象（是否抽象，是否接口）
 						if (isCandidateComponent(sbd)) {
 							if (debugEnabled) {
 								logger.debug("Identified candidate component class: " + resource);
@@ -492,22 +496,20 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 * @return whether the class qualifies as a candidate component
 	 */
 	protected boolean isCandidateComponent(MetadataReader metadataReader) throws IOException {
-		//当他扫描到一个类的时候首先判断这个类有没有被排除
+		// 当他扫描到一个类的时候首先判断这个类有没有被排除
 		for (TypeFilter tf : this.excludeFilters) {
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
 				return false;
 			}
 		}
 		for (TypeFilter tf : this.includeFilters) {
-			//1-tf =new AnnotationTypeFilter(Component.class)
-			//1-tf.match#matchSelf会执行子类的matchSelf方法 是否加了@Component.class
-
-			//2-tf= new AnnotationTypeFilter(Component.class)
-			//2-tf.match#matchSelf会执行子类的matchSelf方法 是否加了ManagedBean
-			//4-tf.match#matchSelf会执行父类的返回false 继续执行 matchClassName
+			// 1-tf =new AnnotationTypeFilter(Component.class)
+			// 1-tf.match#matchSelf会执行子类的matchSelf方法 是否加了@Component.class
+			// 2-tf= new AnnotationTypeFilter(Component.class)
+			// 2-tf.match#matchSelf会执行子类的matchSelf方法 是否加了ManagedBean
+			// 4-tf.match#matchSelf会执行父类的返回false 继续执行 matchClassName
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
-
-				//恒定返回true
+				// 恒定返回true
 				return isConditionMatch(metadataReader);
 			}
 		}

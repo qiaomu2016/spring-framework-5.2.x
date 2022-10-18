@@ -277,29 +277,33 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	@Override
 	public Resource[] getResources(String locationPattern) throws IOException {
 		Assert.notNull(locationPattern, "Location pattern must not be null");
+		// 通配符模式：以 "classpath*:" 开头
 		if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
 			// a class path resource (multiple resources for same name possible)
+			// "classpath*:"通匹符模式 + Ant风格模式
 			if (getPathMatcher().isPattern(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {
 				// a class path resource pattern
 				return findPathMatchingResources(locationPattern);
 			}
-			else {
+			else { // 仅为"classpath*:"通匹符模式
 				// all class path resources with the given name
 				return findAllClassPathResources(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()));
 			}
 		}
+		// 非通配符模式
 		else {
 			// Generally only look for a pattern after a prefix here,
 			// and on Tomcat only after the "*/" separator for its "war:" protocol.
 			int prefixEnd = (locationPattern.startsWith("war:") ? locationPattern.indexOf("*/") + 1 :
 					locationPattern.indexOf(':') + 1);
+			// 非通配符 +　Ant风格模式
 			if (getPathMatcher().isPattern(locationPattern.substring(prefixEnd))) {
 				// a file pattern
 				return findPathMatchingResources(locationPattern);
 			}
-			else {
+			else { // 单一资源
 				// a single resource with the given name
-				return new Resource[] {getResourceLoader().getResource(locationPattern)};
+				return new Resource[] {getResourceLoader().getResource(locationPattern)}; // 调用默认的ResourceLoader获取资源
 			}
 		}
 	}
@@ -492,13 +496,22 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * @see org.springframework.util.PathMatcher
 	 */
 	protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
+		// 方法有点儿长，但是思路还是很清晰的，主要分两步：
+		// ①：确定目录，获取该目录下得所有资源。
+		// ②：在所获得的所有资源后，进行迭代匹配获取我们想要的资源。
+
+		// 获取根目录，eg: Will return "/WEB-INF/" for the pattern "/WEB-INF/*.xml"
 		String rootDirPath = determineRootDir(locationPattern);
+		// 获取子目录
 		String subPattern = locationPattern.substring(rootDirPath.length());
+		// 递归处理
 		Resource[] rootDirResources = getResources(rootDirPath);
 		Set<Resource> result = new LinkedHashSet<>(16);
+		// 循环迭代
 		for (Resource rootDirResource : rootDirResources) {
 			rootDirResource = resolveRootDirResource(rootDirResource);
 			URL rootDirUrl = rootDirResource.getURL();
+			// bundle 资源类型
 			if (equinoxResolveMethod != null && rootDirUrl.getProtocol().startsWith("bundle")) {
 				URL resolvedUrl = (URL) ReflectionUtils.invokeMethod(equinoxResolveMethod, null, rootDirUrl);
 				if (resolvedUrl != null) {
@@ -506,13 +519,16 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 				}
 				rootDirResource = new UrlResource(rootDirUrl);
 			}
+			// vfs 资源类型
 			if (rootDirUrl.getProtocol().startsWith(ResourceUtils.URL_PROTOCOL_VFS)) {
 				result.addAll(VfsResourceMatchingDelegate.findMatchingResources(rootDirUrl, subPattern, getPathMatcher()));
 			}
+			// jar协议、zip协议、wsjar协议、vfszip协议
 			else if (ResourceUtils.isJarURL(rootDirUrl) || isJarResource(rootDirResource)) {
+				// 从jar包中找寻相应的所有class文件
 				result.addAll(doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern));
 			}
-			else {
+			else { // 其它资源类型
 				result.addAll(doFindPathMatchingFileResources(rootDirResource, subPattern));
 			}
 		}
@@ -535,15 +551,23 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * @see #retrieveMatchingFiles
 	 */
 	protected String determineRootDir(String location) {
+		// 找到冒号的后一位
 		int prefixEnd = location.indexOf(':') + 1;
+		// 根目录结束位置
 		int rootDirEnd = location.length();
+		// 在从冒号开始到最后的字符串中，循环判断是否包含通配符，如果包含，则截断最后一个由”/”分割的部分。
+		// 例如：在我们路径中，就是最后的ap?-context.xml这一段。再循环判断剩下的部分，直到剩下的路径中都不包含通配符。
+		// eg:
+		// classpath*:test/cc*/spring-*.xml  -> classpath*:test/
+		// classpath*:test/aa/spring-*.xml   -> classpath*:test/aa/
 		while (rootDirEnd > prefixEnd && getPathMatcher().isPattern(location.substring(prefixEnd, rootDirEnd))) {
 			rootDirEnd = location.lastIndexOf('/', rootDirEnd - 2) + 1;
 		}
+		// 如果查找完成后，rootDirEnd = 0 了，则将之前赋值的 prefixEnd 的值赋给 rootDirEnd ，也就是冒号的后一位
 		if (rootDirEnd == 0) {
 			rootDirEnd = prefixEnd;
 		}
-		return location.substring(0, rootDirEnd);
+		return location.substring(0, rootDirEnd); // 截取根目录
 	}
 
 	/**
