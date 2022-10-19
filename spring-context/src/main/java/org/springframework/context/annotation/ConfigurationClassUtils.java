@@ -128,6 +128,7 @@ abstract class ConfigurationClassUtils {
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
 
 		// 加了@Configuration注解 并且 proxyBeanMethods为true 表示：全配置类
+		// 注：@Configuration注解的proxyBeanMethods属性是从5.2版本开始才有的，proxyBeanMethods默认为true
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}

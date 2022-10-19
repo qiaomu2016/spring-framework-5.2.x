@@ -53,18 +53,37 @@ import java.lang.annotation.Target;
  *
  * @author Phillip Webb
  * @author Sam Brannen
- * @since 4.0
  * @see Condition
+ * @since 4.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+// 如果是类和方法都加了@Conditional注解，最终在方法上的注解为最终的条件，如果返回true则加入容器，反之不会加入容器。
+// 如果只是类上加了@Conditional注解，整个类的所有方法都会加入容器中。
+@Target({ElementType.TYPE, ElementType.METHOD}) // 可以作用在方法上，也可以作用在类上。
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Conditional {
 
 	/**
+	 * 需要传入一个class数组，并且继承Condition接口
+	 * Condition是个接口，需要实现matches方法，返回true则注入bean，false则不注入
 	 * All {@link Condition} classes that must {@linkplain Condition#matches match}
 	 * in order for the component to be registered.
 	 */
 	Class<? extends Condition>[] value();
+
+//	springboot对@Conditional的扩展
+//	@Conditional是springboot实现自动配置的关键基础能力。在此基础上，springboot又创建了多个适用于不同场景的组合条件注解。
+//	@ConditionalOnBean：当上下文中有指定Bean的条件下进行实例化。
+//	@ConditionalOnMissingBean：当上下文没有指定Bean的条件下进行实例化。
+//	@ConditionalOnClass：当classpath类路径下有指定类的条件下进行实例化。
+//	@ConditionalOnMissingClass：当类路径下没有指定类的条件下进行实例化。
+//	@ConditionalOnWebApplication：当项目本身是一个Web项目时进行实例化。
+//	@ConditionalOnNotWebApplication：当项目本身不是一个Web项目时进行实例化。
+//	@ConditionalOnProperty：当指定的属性有指定的值时进行实例化。
+//	@ConditionalOnExpression：基于SpEL表达式的条件判断。
+//	@ConditionalOnJava：当JVM版本为指定的版本范围时进行实例化。
+//	@ConditionalOnResource：当类路径下有指定的资源时进行实例化。
+//	@ConditionalOnJndi：在JNDI存在时触发实例化。
+//	@ConditionalOnSingleCandidate：当指定的Bean在容器中只有一个，或者有多个但是指定了首选的Bean时触发实例化。
 
 }

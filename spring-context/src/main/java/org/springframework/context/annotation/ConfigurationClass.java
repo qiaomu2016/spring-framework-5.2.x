@@ -47,24 +47,25 @@ import org.springframework.util.ClassUtils;
  * @see ConfigurationClassParser
  */
 final class ConfigurationClass {
-	//配置类的注解元数据
-	private final AnnotationMetadata metadata;
 
-	//配置类所对应的文件
-	private final Resource resource;
+	private final AnnotationMetadata metadata; // 配置类的注解元数据
+
+	private final Resource resource; // 配置类所对应的文件
 
 	@Nullable
 	private String beanName;
 
-	//当前类被谁（哪些配置类）import了
+	// 当前类被谁（哪些配置类）import了
 	private final Set<ConfigurationClass> importedBy = new LinkedHashSet<>(1);
-	//当前配置类当中所有的加了@Bean的方法
+
+	// 当前配置类中所有加了@Bean的方法
 	private final Set<BeanMethod> beanMethods = new LinkedHashSet<>();
 
+	// 当前配置类中 通过@ImportResource注解 导入的资源
 	private final Map<String, Class<? extends BeanDefinitionReader>> importedResources =
 			new LinkedHashMap<>();
 
-	//当前配置所import的类且为ImportBeanDefinitionRegistrar类型的集合
+	// 当前配置类中 能过@import注解导入的类，且为ImportBeanDefinitionRegistrar类型的集合
 	private final Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> importBeanDefinitionRegistrars =
 			new LinkedHashMap<>();
 

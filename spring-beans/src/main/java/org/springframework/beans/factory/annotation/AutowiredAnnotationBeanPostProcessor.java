@@ -241,8 +241,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	}
 
 
-	//查找当前beanName 当中所有加了@Autowired属性或者方法
-	//缓存起来
+	// 查找当前beanName 当中所有加了@Autowired属性或者方法，缓存起来
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
@@ -397,10 +396,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
 
-		/**
-		 * 根据当前bean 查找出来所有的加了 @Autowired 的属性
-		 * 然后根据这些属性实例化一些（你有几个属性加了、方法）注入器
-		 */
+		// 根据当前bean 查找所有加了@Autowired注解的属性，然后根据这些属性实例化一些（你有几个属性加了、方法）注入器
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
 			metadata.inject(bean, beanName, pvs);

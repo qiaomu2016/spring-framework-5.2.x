@@ -140,7 +140,7 @@ class ConfigurationClassBeanDefinitionReader {
 		// @Import可以引入普通类、ImportBeanDefinitionRegistrar和ImportSelector的实例
 		// 下面对应三种@Import类的注册处理
 
-		// 注册被@import的普通类(@Component)
+		// 注册被@import的普通类
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
@@ -289,7 +289,7 @@ class ConfigurationClassBeanDefinitionReader {
 			logger.trace(String.format("Registering bean definition for @Bean method %s.%s()",
 					configClass.getMetadata().getClassName(), beanName));
 		}
-		this.registry.registerBeanDefinition(beanName, beanDefToRegister);
+		this.registry.registerBeanDefinition(beanName, beanDefToRegister); // 注册
 	}
 
 	protected boolean isOverriddenByExistingDefinition(BeanMethod beanMethod, String beanName) {

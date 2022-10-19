@@ -777,6 +777,13 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * 面向java8函数式接口编程，提供一个回调方法，直接调用回调方法即可，不需要通过反射了，
+	 * 用于替代后工厂方法（包含静态工厂）或者构造器 创建对象，但是其面的生命周期回调不影响。
+	 * 也就是框架在创建对象的时候会校验这个instanceSupplier是否有值，有的话，调用这个字段获取对象。
+	 * 参考测试类 {@link com.test.context.SupplierTest }
+	 * 那么其应用场景什么呢？什么情况下使用呢？
+	 * 不管是静态工厂还是工厂方法，都需要通过反射调用目标方法创建对象，反射或多或少影响性能，如果不使用反射呢？
+	 * 就是面向java8函数式接口编程，就是提供一个回调方法，直接调用回调方法即可，不需要通过反射了。
 	 * Specify a callback for creating an instance of the bean,
 	 * as an alternative to a declaratively specified factory method.
 	 * <p>If such a callback is set, it will override any other constructor

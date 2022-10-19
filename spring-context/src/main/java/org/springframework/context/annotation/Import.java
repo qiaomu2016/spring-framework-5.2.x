@@ -42,6 +42,8 @@ import java.lang.annotation.Target;
  * <p>If XML or other non-{@code @Configuration} bean definition resources need to be
  * imported, use the {@link ImportResource @ImportResource} annotation instead.
  *
+ * ImportSelector、DeferredImportSelector、ImportBeanDefinitionRegistrar这三个接口都必须依赖于@Import一起使用，而@Import可以单独使用。
+ *
  * @author Chris Beams
  * @author Juergen Hoeller
  * @since 3.0

@@ -42,8 +42,8 @@ import java.util.EventListener;
  *
  * {@link EventListener} 注解
  * 除了通过实现接口，还可以使用@EventListener 注解，实现对任意的方法都能监听事件。
- * 在任意方法上标注@EventListener 注解，指定 classes，即需要处理的事件类型，一般就是 ApplicationEven 及其子类，可以设置多项。
- * @code { @EventListener(classes = {MyApplicationListener.class}) } ，其实添加@EventListener注解的方法会被包装成了ApplicationListener对象
+ * 在任意方法上标注@EventListener 注解，指定 classes，即需要处理的事件类型，一般就是 ApplicationEvent 及其子类，可以设置多项。
+ * @code { @EventListener(classes = {MyTestEvent.class}) } ，其实添加@EventListener注解的方法会被包装成了ApplicationListener对象
  *
  *
  * @author Rod Johnson

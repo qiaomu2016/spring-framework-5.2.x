@@ -155,8 +155,8 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	private static final Set<Class<? extends Annotation>> resourceAnnotationTypes = new LinkedHashSet<>(4);
 
 	static {
-		webServiceRefClass = loadAnnotationType("javax.xml.ws.WebServiceRef");
-		ejbClass = loadAnnotationType("javax.ejb.EJB");
+		webServiceRefClass = loadAnnotationType("javax.xml.ws.WebServiceRef"); // 提供对@WebServiceRef的支持
+		ejbClass = loadAnnotationType("javax.ejb.EJB"); // 提供对@EJB的支持
 
 		resourceAnnotationTypes.add(Resource.class);
 		if (webServiceRefClass != null) {
@@ -189,6 +189,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 
 	/**
+	 * 提供对@PostConstruct和@PreDestroy的支持
 	 * Create a new CommonAnnotationBeanPostProcessor,
 	 * with the init and destroy annotation types set to
 	 * {@link javax.annotation.PostConstruct} and {@link javax.annotation.PreDestroy},
@@ -291,7 +292,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		// 处理@PostConstruct和@PreDestroy注解
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+		// 处理@Resource
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
 		metadata.checkConfigMembers(beanDefinition);
 	}

@@ -32,6 +32,10 @@ import org.springframework.util.ObjectUtils;
  * The remaining settings will <i>always</i> be taken from the child definition:
  * depends on, autowire mode, dependency check, singleton, lazy init.
  *
+ * 子BeanDefinition会从父BeanDefinition继承构造函数参数值、属性值和方法重写，并可选择添加新值。
+ * 如果 子BeanDefinition 指定了init方法、destroy方法 和/或 静态工厂方法，它们将覆盖相应的父设置。
+ * 其余的设置 总是取自 子BeanDefinition:如依赖、自动注入模式、是否进行依赖项检查、是否单例、是否延迟初始化。
+ *
  * <p><b>NOTE:</b> Since Spring 2.5, the preferred way to register bean
  * definitions programmatically is the {@link GenericBeanDefinition} class,
  * which allows to dynamically define parent dependencies through the

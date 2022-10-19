@@ -85,25 +85,25 @@ class ConditionEvaluator {
 
 		if (phase == null) {
 			if (metadata instanceof AnnotationMetadata &&
-					ConfigurationClassUtils.isConfigurationCandidate((AnnotationMetadata) metadata)) {
-				return shouldSkip(metadata, ConfigurationPhase.PARSE_CONFIGURATION);
+					ConfigurationClassUtils.isConfigurationCandidate((AnnotationMetadata) metadata)) { // 是带注解的配置类
+				return shouldSkip(metadata, ConfigurationPhase.PARSE_CONFIGURATION);  // 递归调用
 			}
 			return shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN);
 		}
 
 		List<Condition> conditions = new ArrayList<>();
-		for (String[] conditionClasses : getConditionClasses(metadata)) {
-			for (String conditionClass : conditionClasses) {
+		for (String[] conditionClasses : getConditionClasses(metadata)) { // 获取@Conditional注解配置的值
+			for (String conditionClass : conditionClasses) {  // 实例化conditionClass对象，放入conditions集合中
 				Condition condition = getCondition(conditionClass, this.context.getClassLoader());
 				conditions.add(condition);
 			}
 		}
 
-		AnnotationAwareOrderComparator.sort(conditions);
+		AnnotationAwareOrderComparator.sort(conditions);  // 根据优先级进行排序
 
 		for (Condition condition : conditions) {
 			ConfigurationPhase requiredPhase = null;
-			if (condition instanceof ConfigurationCondition) {
+			if (condition instanceof ConfigurationCondition) {  // 如果是ConfigurationCondition，获取处理阶段
 				requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
 			}
 			if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {

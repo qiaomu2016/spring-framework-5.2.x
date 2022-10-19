@@ -263,7 +263,7 @@ public class AnnotatedBeanDefinitionReader {
 
 		// abd.getMetadata() 元数据包括：注解信息、是否内部类、类Class基本信息等等
 		// 此处由conditionEvaluator#shouldSkip去过滤此Class是否是配置类
-		// 判断是否需要跳过注解，spring中有一个@Condition注解，当不满足条件，这个bean就不会被解析
+		// 判断是否需要跳过注解，spring中有一个@Conditional注解，当不满足条件，这个bean就不会被解析
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}
@@ -303,7 +303,9 @@ public class AnnotatedBeanDefinitionReader {
 		}
 		// 把AnnotatedGenericBeanDefinition数据结构和beanName封装到一个对象中
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
-		// 看是需要代理，如果不需要代理，返回本身，如果需要代理，替换成代理BeanDefinitionHolder
+		// 看是否需要代理，如果不需要代理，返回本身（即上面定义的definitionHolder），
+		// 如果需要代理，则把当前BeanDefinitionHolder替换成 代理的BeanDefinitionHolder（为RootBeanDefinition，bean名称为beanName，beanClass为ScopedProxyFactoryBean），
+		// 替换的同时会在内部注册 上面定义的definitionHolder，bean名称为: "scopedTarget."前缀+beanName （相当于代理时 会注册两个BeanDefinition）
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 
 		// 调用DefaultListableBeanFactory中的registerBeanDefinition方法 注册

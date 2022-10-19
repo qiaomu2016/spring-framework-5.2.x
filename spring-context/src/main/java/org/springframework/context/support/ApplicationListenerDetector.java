@@ -31,7 +31,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
- * {@code BeanPostProcessor} that detects beans which implement the {@code ApplicationListener}
+ * ApplicationListenerDetector是Spring中内置的BeanPostProcessor实现，
+ * 主要是为了检测Spring容器中的的{@link ApplicationListener}，然后将其注册到Spring上下文中
+ * {@code BeanPostProcessor} that detects(检测) beans which implement the {@code ApplicationListener}
  * interface. This catches beans that can't reliably be detected by {@code getBeanNamesForType}
  * and related operations which only work against top-level beans.
  *

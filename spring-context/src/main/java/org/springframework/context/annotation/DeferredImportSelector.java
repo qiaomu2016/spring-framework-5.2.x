@@ -31,6 +31,16 @@ import org.springframework.lang.Nullable;
  * <p>Implementations may also provide an {@link #getImportGroup() import group} which
  * can provide additional sorting and filtering logic across different selectors.
  *
+ * ImportSelector和DeferredImportSelector的区别： 参考：https://www.cnblogs.com/xfeiyun/p/15675230.html
+ * 1.DeferredImportSelector是ImportSelector的一个扩展
+ * 2.ImportSelector实例的selectImports方法的执行时机，是在@Configuration注解中的其他逻辑被处理之前，所谓的其他逻辑，包括对@ImportResource、@Bean这些注解的处理
+ * 	（注意，这里只是对@Bean修饰的方法的处理，并不是立即调用@Bean修饰的方法，这个区别很重要！）
+ * 3.DeferredImportSelector实例的selectImports方法的执行时机，是在@Configuration注解中的其他逻辑被处理完毕之后
+ * 4.DeferredImportSelector的实现类可以用Order注解，或者实现Ordered接口来对selectImports的执行顺序排序（ImportSelector不支持）
+ * 5.ImportSelector是Spring3.1提供的，DeferredImportSelector是Spring4.0提供的
+ * 6.Spring Boot的自动配置功能就是通过DeferredImportSelector接口的实现类EnableAutoConfigurationImportSelector做到的
+ * 	（因为自动配置必须在我们自定义配置后执行才行，注意SpringBoot高版本已换成AutoConfigurationImportSelector）
+ *
  * @author Phillip Webb
  * @author Stephane Nicoll
  * @since 4.0

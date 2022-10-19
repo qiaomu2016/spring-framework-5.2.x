@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 public class ABeanListener implements ApplicationListener<ABeanInitEvent> {
 	@Override
 	public void onApplicationEvent(ABeanInitEvent event) {
-		log.debug("event：[{}]",event.getClass().getSimpleName());
+		log.debug("event：[{}]", event.getClass().getSimpleName());
 	}
 }
