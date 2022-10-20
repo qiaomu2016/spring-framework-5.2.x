@@ -44,6 +44,7 @@ package org.springframework.beans.factory;
 public interface SmartInitializingSingleton {
 
 	/**
+	 * 在单例预实例化阶段结束时调用，并保证所有常规单例 bean 都已创建。
 	 * Invoked right at the end of the singleton pre-instantiation phase,
 	 * with a guarantee that all regular singleton beans have been created
 	 * already. {@link ListableBeanFactory#getBeansOfType} calls within

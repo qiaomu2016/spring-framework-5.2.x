@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -20,6 +21,9 @@ public class A implements InitializingBean {
 	@Autowired
 	ApplicationContext context;
 
+	@Autowired
+	ApplicationEventMulticaster applicationEventMulticaster;
+
 	public A() {
 		log.debug("create a  Object");
 	}
@@ -28,7 +32,8 @@ public class A implements InitializingBean {
 	@PostConstruct
 	public void init() {
 		log.debug("a init PostConstruct");
-		context.publishEvent(new ABeanInitEvent(context));
+		applicationEventMulticaster.multicastEvent(new ABeanInitEvent(context));
+//		context.publishEvent(new ABeanInitEvent(context));
 	}
 
 	// spring bean的生命周期初始化回调 接口形式

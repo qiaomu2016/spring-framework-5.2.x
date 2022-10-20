@@ -353,7 +353,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
 
-			// 注册ConfigurationClass中所配置的Bean（注册非@ComponentScan扫描的其他类型的BeanDefinition）
+			// 注册ConfigurationClass中所配置的Bean、@import导入的类及@ImportedResources导入的资源（注册非@ComponentScan扫描的其他类型的BeanDefinition）
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 

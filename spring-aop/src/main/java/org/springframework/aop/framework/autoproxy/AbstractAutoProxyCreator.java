@@ -16,20 +16,9 @@
 
 package org.springframework.aop.framework.autoproxy;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.aopalliance.aop.Advice;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.aop.Advisor;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.TargetSource;
@@ -50,6 +39,11 @@ import org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostP
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Proxy;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
@@ -497,6 +491,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (advisorsPreFiltered()) {
 			proxyFactory.setPreFiltered(true);
 		}
+
+		// proxyFactory = {ProxyFactory@3409} "org.springframework.aop.framework.ProxyFactory:
+		// 1 interfaces [com.test.aop.service.StudentService];  // 基于JDK的动态代理
+		// 4 advisors [org.springframework.aop.interceptor.ExposeInvocationInterceptor.ADVISOR, InstantiationModelAwarePointcutAdvisor: expression [pointCut()]; advice method [public void com.test.aop.aspect.AopAspect.before()]; perClauseKind=SINGLETON, InstantiationModelAwarePointcutAdvisor: expression [pointCut()]; advice method [public void com.test.aop.aspect.AopAspect.after()]; perClauseKind=SINGLETON, InstantiationModelAwarePointcutAdvisor: expression [pointCut()]; advice method [public void com.test.aop.aspect.AopAspect.afterReturning()]; perClauseKind=SINGLETON];
+		// targetSource [SingletonTargetSource for target object [com.test.aop.service.impl.StudentServiceImpl@115667d]];
+		// proxyTargetClass=false; optimize=false; opaque=false; exposeProxy=false; frozen=false"
 
 		return proxyFactory.getProxy(getProxyClassLoader()); // 生成代理类
 	}

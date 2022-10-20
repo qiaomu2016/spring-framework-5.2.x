@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j(topic = "e")
-public class C {
+public class C extends E{
 	public C(){
 		log.debug("create c Object");
 	}

@@ -251,25 +251,21 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
-		// 从缓存中或者实例工厂中获取 Bean 对象
-		// Eagerly check singleton cache for manually registered singletons.
-		// 这里先尝试从缓存中获取，获取不到再走后面创建的流程
-		// 获取到有两种情况，一种是Bean创建完成存储到最终的缓存中。
-		// 另一种是未创建完成，但先预存到一个单独的缓存中，这种是针对可能存在循环引用的情况的处理。
+		// 从缓存中或者实例工厂中获取 Bean 对象。 这里先尝试从缓存中获取，获取不到再走后面创建的流程
+		// 获取到有两种情况，一种是Bean创建完成存储到最终的缓存中；另一种是未创建完成，但先预存到一个单独的缓存中，这种是针对可能存在循环引用的情况的处理。
 		// 如A引用B,B又引用了A,因而在初始化A时，A会先调用构造函数创建出一个实例，在依赖注入B之前，先将A实例缓存起来
 		// 然后在初始化A时，依赖注入阶段，会触发初始化B，B创建后需要依赖注入A时，先从缓存中获取A（这个时候的A是不完整的)，避免循环依赖的问题出现。
 		/*
 		 * 这个方法在初始化的时候会调用，在getBean的时候也会调用，为什么需要这么做呢？
 		 * 也就是说spring在初始化的时候先获取这个对象，判断这个对象是否被实例化好了(一般情况都是null，如果是lazy的，那么可能是非空的)
-		 * 从spring的bean容器中获取一个bean，由于spring中bean容器是一个map（singletonObjects），
-		 * 所以你可以理解getSingleton(beanName)等于beanMap.get(beanName)
-		 * 由于方法会在spring环境初始化的时候（就是对象被建的时候调用一次）调用一次，还在在getBean的时候调用一次
+		 * 从spring的bean容器中获取一个bean，由于spring中bean容器是一个map（singletonObjects），所以你可以理解getSingleton(beanName)等于beanMap.get(beanName)
+		 * 由于方法会在spring环境初始化的时候（就是对象被建的时候调用一次）调用一次，还在getBean()的时候调用一次
 		 * 所在在调试的时候需要特别注意，不能直接断了点在这里，需要先进入到 annotationConfigApplicationContext.getBean(IndexService.class)
 		 * 之后再断点，这样就确保了我们是在获取这个bean的时候调用的。
 		 * 需要说明的是：在初始化时候调用一般都是返回null
 		 */
-		Object sharedInstance = getSingleton(beanName); // 判断这个bean是否有被创建过
-		if (sharedInstance != null && args == null) {
+		Object sharedInstance = getSingleton(beanName);
+		if (sharedInstance != null && args == null) { // bean已经被被创建过
 			if (logger.isTraceEnabled()) {
 				if (isSingletonCurrentlyInCreation(beanName)) {
 					logger.trace("Returning eagerly cached instance of singleton bean '" + beanName +
@@ -367,7 +363,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw ex;
 						}
 					});
-					// 加载了单例 bean 后，调用 getObjectForBeanInstance方法，从 bean 实例中获取对象
+					// 加载了单例bean后，调用getObjectForBeanInstance方法，从bean实例中获取对象，该对象要么是 bean 实例本身，要么就是 FactoryBean 创建的 Bean 对象。
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
@@ -1357,6 +1353,20 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			String beanName, BeanDefinition bd, @Nullable BeanDefinition containingBd)
 			throws BeanDefinitionStoreException {
 
+		// 一个BeanDefinition是可以设置父类BeanDefinition的, 仅仅需要调用其setParentName即可, 之所以出现父子bean是因为Spring允许将相同bean的定义给抽出来,
+		// 成为一个父BeanDefinition, 这样其它的BeanDefinition就能共用这些公共的数据了, 并且提出了RootBeanDefinition和ChildBeanDefinition之间的关系,
+		// 以及他们的缺点, 从而Spring在之后的版本中引入了GenericBeanDefinition, 在Spring的生命周期中, 如果要实例化一个bean则需要先将bean进行合并,
+		// 这样拿到的BeanDefinition才是信息完整的
+
+		//	注：通常 BeanDefinition 在之前加载到 BeanFactory 中的时候，通常是被封装成 GenericBeanDefinition
+		//	（当使用xml配置来注册 bean，则该 bean 定义会被封装成GenericBeanDefinition）或 ScannedGenericBeanDefinition（使用<context:component-scan /> + @Compoment时），
+		//	但是从这边之后 bean 的后续流程处理都是针对 RootBeanDefinition，因此在这边会统一将 BeanDefinition 转换成 RootBeanDefinition。
+
+		// 对于BeanDefinition的合并, Spring都会创建一个新的RootBeanDefinition来进行接收, 而不是用原来的BeanDefinition,
+		// 如果原始BeanDefinition没有父BeanDefinition了, 那么就直接创建一个RootBeanDefinition,并将原始BeanDefinition作为参数传入构造方法中,
+		// 如果原始BeanDefinition存在父BeanDefinition, Spring除了会做上述的操作外, 还会调用overrideFrom方法进行深入的合并, 其实就是一系列的setXXX方法的调用而已,
+		// 在合并完成后, 对于合并后的BeanDefinition如果没有作用域, 则设置为单例, 并且将合并的BeanDefinition放入到mergedBeanDefinitions这个map中缓存起来
+
 		synchronized (this.mergedBeanDefinitions) {
 			RootBeanDefinition mbd = null;
 			RootBeanDefinition previous = null;
@@ -1368,6 +1378,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 			if (mbd == null || mbd.stale) {
 				previous = mbd;
+				// 如果一个BeanDefinition没有设置parentName, 表示该beanDefinition是没有父BeanDefinition的, 此时
+				// 如果这个BeanDefinition是RootBeanDefinition的实例或子类实例, Spring就会直接克隆一个一模一样的BeanDefinition,
+				// 如果不是RootBeanDefinition类型, 则根据当前BeanDefinition创建一个新的RootBeanDefinition。
 				if (bd.getParentName() == null) {
 					// Use copy of given root bean definition.
 					if (bd instanceof RootBeanDefinition) {
@@ -1379,13 +1392,17 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 				else {
 					// Child bean definition: needs to be merged with parent.
+					// 如果一个BeanDefinition有父类, 那么Spring就会获取到父类的beanName(因为可能存在别名, 所以调用了transformedBeanName方法),
+					// 如果父类的beanName和当前BeanName不一样, 说明是存在真正的父类的, Spring就会先将父类合并了, 因为父类可能还有父类,
+					// 该递归方法结束后就能获取到一个完整的父BeanDefinition了, 然后new了一个RootBeanDefinition, 将完整的父BeanDefinition放入进去,
+					// 从而初步完成了合并
 					BeanDefinition pbd;
 					try {
 						String parentBeanName = transformedBeanName(bd.getParentName());
 						if (!beanName.equals(parentBeanName)) {
 							pbd = getMergedBeanDefinition(parentBeanName);
 						}
-						else {
+						else { // 如果父类的beanName和当前BeanName一样，则从当前容器的父容器中获取
 							BeanFactory parent = getParentBeanFactory();
 							if (parent instanceof ConfigurableBeanFactory) {
 								pbd = ((ConfigurableBeanFactory) parent).getMergedBeanDefinition(parentBeanName);
@@ -1401,7 +1418,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						throw new BeanDefinitionStoreException(bd.getResourceDescription(), beanName,
 								"Could not resolve parent bean definition '" + bd.getParentName() + "'", ex);
 					}
-					// Deep copy with overridden values.
+					// Deep copy with overridden values. 深拷贝
 					mbd = new RootBeanDefinition(pbd);
 					mbd.overrideFrom(bd);
 				}
@@ -1866,7 +1883,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				mbd = getMergedLocalBeanDefinition(beanName);
 			}
 			boolean synthetic = (mbd != null && mbd.isSynthetic());
-			object = getObjectFromFactoryBean(factory, beanName, !synthetic);
+			object = getObjectFromFactoryBean(factory, beanName, !synthetic);  // 从FactoryBean中获取对象
 		}
 		return object;
 	}

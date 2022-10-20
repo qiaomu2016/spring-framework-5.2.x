@@ -876,6 +876,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
 			// 为什么不直接遍历map，而是从list当中遍历一个beanName作为key,从mergedBeanDefinitions map当中去获取一个bd
+			// 在Spring的生命周期中, 如果要实例化一个bean则需要先将bean进行合并, 这样拿到的BeanDefinition才是信息完整的
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 
 			// 如果Bean不是抽象的，是单例的，不是懒加载的，则开始创建单例对象通过调用getBean(beanName)方法初始化
@@ -883,7 +884,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				// 判断当前Bean是否实现了FactoryBean接口，如果实现了，判断是否要立即初始化
 				// 判断是否需要立即初始化，根据Bean是否实现了SmartFactoryBean并且重写的内部方法isEagerInit返回true
 				if (isFactoryBean(beanName)) {
-					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
+					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName); // 实例化FactoryBean
 					if (bean instanceof FactoryBean) {
 						FactoryBean<?> factory = (FactoryBean<?>) bean;
 						boolean isEagerInit;
@@ -907,7 +908,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
-		// Trigger post-initialization callback for all applicable beans...
+		// Trigger post-initialization callback for all applicable beans...  触发初始化后回调
+		// 调用SmartInitializingSingleton的初始化后回调方法afterSingletonsInstantiated()，
+		// 如调用EventListenerMethodProcessor.afterSingletonsInstantiated()回调方法处理@EventListener注解
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
 			if (singletonInstance instanceof SmartInitializingSingleton) {

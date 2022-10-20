@@ -542,7 +542,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Initialize message source for this context. 初始化上下文中的资源文件，如国际化文件的处理等
 				initMessageSource();
 
-				// Initialize event multicaster for this context. 初始化上下文事件广播器
+				// Initialize event multicaster for this context. 初始化上下文事件广播器，默认为SimpleApplicationEventMulticaster
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses. 给子类扩展初始化其他Bean，这是一个模板方法，交由不同的子类实现处理自己的逻辑。
